@@ -109,3 +109,68 @@ The application provides separate login portals for each user role. Use the foll
     -   **Password:** `buyerpass`
 
 You can also create new Seller or Buyer accounts directly from the user interface.
+
+## Workflow
+
+```mermaid
+graph TD
+    A[Start Application] --> B{User Logged In?};
+
+    subgraph "Authentication"
+        B -- No --> C[Display Login/Signup Page];
+        C --> D{Choose Action};
+        D -- Login --> E[Select Role: Manager, Seller, or Buyer];
+        E --> F[Enter Credentials & Submit];
+        F --> G[Login User];
+        G --> H{Credentials Valid?};
+        H -- Yes --> I[Set Session State & Rerun];
+        H -- No --> J[Show Error Message];
+        J --> C;
+
+        D -- Signup --> K[Fill Signup Form for Buyer or Seller];
+        K --> L[Create User];
+        L --> M{Username Exists?};
+        M -- No --> N[Create User in DB & Show Success];
+        M -- Yes --> O[Show Error Message];
+        N --> C;
+        O --> K;
+    end
+
+    B -- Yes --> P[Display Main App];
+    I --> P;
+
+    subgraph "Main Application"
+        P --> Q[Show Sidebar with User Info & Navigation];
+        Q --> R{Select Navigation};
+        R -- Dashboard --> S{Check User Role};
+        R -- Price Estimator --> T[Price Estimator View];
+        T --> U[Enter Car Details];
+        U --> V[Predict Price with ML Model];
+        V --> W[Display Estimated Price];
+        W --> Q;
+
+        S -- Manager --> X[Manager View];
+        X --> X1[View Metrics, Charts, All Cars, All Transactions];
+        X1 --> Q;
+
+        S -- Seller --> Y[Seller View];
+        Y --> Y1{Select Menu};
+        Y1 -- Add Car --> Y2[Show Add Car Form];
+        Y1 -- My Cars --> Y3[Show Seller's Cars];
+        Y1 -- My Transactions --> Y4[Show Seller's Sales];
+        Y2 --> Q;
+        Y3 --> Q;
+        Y4 --> Q;
+
+        S -- Buyer --> Z[Buyer View];
+        Z --> Z1[Filter & Search for Cars];
+        Z1 --> Z2[Display Available Cars];
+        Z2 --> Z3{Purchase Car?};
+        Z3 -- Yes --> Z4[Purchase Car];
+        Z4 --> Z5[Update DB & Show Success];
+        Z5 --> Z1;
+        Z3 -- No --> Q;
+    end
+
+    Q -- Logout --> AA[Clear Session State & Rerun];
+    AA --> B;
